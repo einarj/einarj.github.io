@@ -1,0 +1,57 @@
+---
+layout: post
+title: 'Ruby gotcha: using elsif instead of else if'
+date: 2010-05-07 17:11:50.000000000 +00:00
+categories:
+- Ruby
+tags:
+- Ruby
+status: publish
+type: post
+published: true
+---
+<p>These past few days I've been playing with <a href="http://www.ruby-lang.org/">Ruby</a> and <a href="http://rubyonrails.org/">Rails</a>. I'm really loving the experience so far, but every now and then I stumble upon something that doesn't work as I expected it to.</p>
+<p>Last night I encountered problems with one of the most fundamental expressions, namely a if-then-else construct. The interpreter kept complaining that it expected the <strong>end</strong> keyword, but did not find it.</p>
+<p>My code was similar to the sample code below:</p>
+<div>
+{% highlight ruby %}
+if 2 == 3
+  puts "foo"
+else if 3 == 3
+  puts "bar"
+end
+{% endhighlight %}
+</div>
+<p>Executing this yields an error: [cc]5: syntax error, unexpected $end, expecting kEND[/cc]</p>
+<p>At first I was a bit confused and tried to put an extra <strong>end</strong> keyword after the other one, just to see if it would work:</p>
+<div>
+{% highlight ruby %}
+if 2 == 3
+  puts "foo"
+else if 3 == 3
+  puts "bar"
+end end
+{% endhighlight %}
+</div>
+<p>This "fixed" the problem. However this solution is not going to win any awards for elegance, so I dug around to see why the original code did not work. The reason is that I <a href="http://ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html#if">should have used</a> the <strong>elsif</strong> keyword which is not equivalent of an <strong>if</strong> followed  by an <strong>else</strong> clause. </p>
+<div>
+{% highlight ruby %}
+if 2 == 3
+  puts "foo"
+elsif 3 == 3
+  puts "bar"
+end
+{% endhighlight %}
+</div>
+<p>The reason why my original implementation did not work, and why adding an extra <strong>end</strong> worked becomes much more obvious if we change the indentation of the original example:</p>
+<div>
+{% highlight ruby %}
+if 2 == 3
+  puts "foo"
+else
+  if 3 == 3
+    puts "bar"
+  # Missing end here!
+end
+{% endhighlight %}
+</div>

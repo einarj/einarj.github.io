@@ -1,0 +1,99 @@
+---
+layout: post
+title: Cleaning up rails view logic using Draper
+date: 2014-02-16 22:26:41.000000000 +00:00
+categories:
+- Rails
+- Ruby
+tags:
+- draper
+status: publish
+type: post
+published: true
+---
+<p>Rails makes it super easy to create database backed applications fast, but sometimes we get sloppy in all the hurry.</p>
+<h2>First iteration (quick and dirty)</h2>
+<p>Assume we have a simple blog application (yeah, original, I know) with a BlogPost model. The BlogPost model has three properties: title, content and author, all of which are strings. Our scaffolded index view looks like this:</p>
+{% highlight erb %}
+<% @blog_posts.each do |blog_post| %>
+  <tr>
+    <td><%= blog_post.title %></td>
+    <td><%= blog_post.content %></td>
+    <td><%= blog_post.author %></td>
+    ... other code to display in each line
+  </tr>
+<% end %>
+{% endhighlight %}
+<p>We now want to display when the post was published, and our first stab at it looks like this:</p>
+{% highlight erb %}
+<td><%= blog_post.created_at %></td>
+{% endhighlight %}
+While this does satisfy the core requirement, the datetime format is rather verbose. In fact, we only want to show the date (not time) for the index page. Our first attempt at this looks like the following:<br />
+{% highlight erb %}
+<% @blog_posts.each do |blog_post| %>
+<tr>
+  ... previous lines
+  <td><%= blog_post.created_at.strftime("%m.%b.%Y") %></td>
+   ... other code to display in each line
+  </tr>
+{% endhighlight %}
+<p>We also want to show the published time when viewing an individual post, but this time we want to include the time (hours and minutes only).</p>
+
+{% highlight erb %}
+<%= blog_post.created_at.strftime("%m.%b.%Y %H:%M") %>
+{% endhighlight %}
+
+<p>Now the timestamps are displayed just the way we want them.</p>
+<h2>Iteration 2: reducing view logic</h2>
+<p>The problem with the above approach is that we now have logic in our view. Not only does this clutter the view code, but if we want to use the same date format for blog posts elsewhere in the app, we have to duplicate this code everywhere.</p>
+<p>Our first attempt to clean this up is to add a new method to the BlogPost model which we can then call instead of #created_at:<br />
+{% highlight ruby %}
+class BlogPost < ActiveRecord::Base
+  def short_date
+    created_at.strftime("%m.%b.%Y")
+  end
+
+  def long_date
+    created_at.strftime("%m.%b.%Y %H:%M")
+  end
+end
+{% endhighlight %}
+<p>Which allows us to change the index view to:</p>
+{% highlight erb %}
+<td><%= blog_post.short_date %></td>
+{% endhighlight %}
+<p>and our show view to:</p>
+{% highlight erb %}
+<p><%= @blog_post.long_date %></p>
+{% endhighlight %}
+<p>This looks much better.</p>
+<h2>Third iteration: remove presentation logic from model</h2>
+<p>While our views are certainly cleaner, we just added view specific logic to our model. The model should not be concerned about how to format data for particular views. So, where then do we put it? The answer is Decorators.</p>
+<p>For this I will rely on one of my favourite gems, namely <a href="https://github.com/drapergem/draper">Draper</a>.</p>
+<p>We'll create a new decorator, simply called BlogPostDecorator. This will be our place for view specific logic.<br />
+{% highlight ruby %}
+class BlogPostDecorator < Draper::Decorator
+  delegate_all
+
+  def short_date
+    object.created_at.strftime("%m.%b.%Y")
+  end
+
+  def long_date
+    object.created_at.strftime("%m.%b.%Y %H:%M")
+  end
+end
+{% endhighlight %}
+<p>To make this available in the views, we must decorate the objects returned by the controller:</p>
+{% highlight ruby %}
+def index
+  @blog_posts = BlogPost.all.decorate
+end
+
+def show
+  @blog_post = BlogPost.find(params[:id]).decorate
+end
+{% endhighlight %}
+<h2>Conclusion</h2>
+<p>We have met our view requirements with cleaner views and cleaner models by using decorators. I have merely shown you a glimpse of what Draper is capable of and I encourage you to head over to the <a href="https://github.com/drapergem/draper">Draper Github page</a> and look through it.</p>
+<p>If you want to play around with this, you can take a look at <a href="https://github.com/einarj/draper_demo">the source code for the BlogPost app</a>.</p>

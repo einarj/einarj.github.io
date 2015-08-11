@@ -1,0 +1,48 @@
+---
+layout: post
+title: Make RSpec clean up Mongoid records
+date: 2013-07-07 21:36:01.000000000 +00:00
+categories:
+- Rails
+- Ruby
+tags:
+- rspec mongoid
+status: publish
+type: post
+published: true
+---
+<p>I am currently working on a pet project in Rails that uses Mongoid to connect as its Object-Document-Mapper (which is similar to what Active Record does for SQL databases).</p>
+<p>I then ran into issue when I had an RSpec test case that verified that tested a method that called <a href="http://mongoid.org/en/mongoid/docs/querying.html">find_or_create_by</a>. In other words, a record should be created if it did not exist, otherwise the existing record should be returned.</p>
+So my test case looked something like this:
+{% highlight ruby %}
+it 'creates entry from auth hash' do
+  auth_hash = {'info' => {'name' =>  'Samuel Vimes'} }
+  expect {
+    User.find_or_create_from_auth_hash(auth_hash)
+  }.to change(User, :count).by(1)
+end
+{% endhighlight %}
+
+<p>This test was green the first time I ran it, but failed the second time. The reason was that the database was not being cleaned up in between test runs.</p>
+<a href="https://github.com/bmabey/database_cleaner" title="Database Cleaner">Database Cleaner</a> by <a href="https://github.com/bmabey">Ben Mabey</a> to the rescue. I added this to the :test group of my Gemfile:<br />
+{% highlight ruby %}
+gem 'database_cleaner', :github => 'bmabey/database_cleaner'
+{% endhighlight %}
+
+And this to the configure block of my spec_helper:
+{% highlight ruby %}
+# Cleanup the DB in between test runs
+config.before(:suite) do
+  DatabaseCleaner[:mongoid].strategy = :truncation
+  DatabaseCleaner[:mongoid].clean_with(:truncation)
+end
+
+config.before(:each) do
+  DatabaseCleaner.start
+end
+
+config.after(:each) do
+  DatabaseCleaner.clean
+end
+{% endhighlight %}
+<p>And whoila! Now my test passes in every run.</p>

@@ -1,0 +1,60 @@
+---
+layout: post
+title: Using Vim for Rails development
+date: 2012-07-16 11:55:03.000000000 +00:00
+categories:
+- Ruby
+- Vim
+tags: []
+status: publish
+type: post
+published: true
+---
+<p>After I started working fulltime on a Rails application, most of my daily work takes place in a text editor. I decided that this was as good an oppurtunity as any to learn vim properly. I want to list a few useful things that I've recently learned.</p>
+<p>In my discussions below I'll often mention the &lt;leader&gt; character. &lt;leader&gt; is bound to \ by default, but your configuration may vary.</p>
+<h3>Multiple commands at once</h3>
+<p>You can run multiple commands at once by seperating them with a | (pipe) character. For instance:</p>
+{% highlight vim %}
+:vsp | e somefile
+{% endhighlight %}
+
+is equivalent to running
+{% highlight vim %}
+:vsp
+{% endhighlight %}
+
+followed by
+{% highlight vim %}
+:e somefile
+{% endhighlight %}
+<h3>The power of plugins</h3>
+<p>I've used vim off and on for a long time, but have only needed the most basic functionality. But there is a wide selection of plugins available that really turn a promising editor into an awesome workbench.</p>
+<h3>Fugitive</h3>
+<p>According to its <a title="Fugitive" href="https://github.com/tpope/vim-fugitive">README</a> file, Fugitive "may very well be the best Git wrapper of all time". The commands that I've used the most are:</p>
+<p><strong>:Gdiff</strong> for a split-pane comparison of my copy vs. the copy in the repository.</p>
+<p><strong>:Gread</strong> which is equivalent to git checkout, except that it works on the vim buffer instead of reverting the actual file. This means for instance that you can revert your changes by accident and then undo.</p>
+<h3>NerdCommenter</h3>
+<p><a title="NerdCommenter" href="https://github.com/ddollar/nerdcommenter">NerdCommenter</a> is a powerful plugin that allows you to make all sorts of comments with ease. In my daily use I rely mostly on a single command, namely:<br />
+{% highlight vim %}
+<leader> c <space> 
+{% endhighlight %}
+which toggles comments on/off for the current line or for all the lines of a visual selection.</p>
+
+<h3>Vroom</h3>
+<p><a title="Vroom" href="https://github.com/skalnik/vim-vroom">Vroom</a> makes it easy to run your Rails tests within vim. Simply jump to your test (say FooControllerTest), hit
+{% highlight vim %}
+<leader> r
+{% endhighlight %}
+then jump back to the class being tested (say FooController), make your changes then hit 
+{% highlight vim %}
+<leader> r
+{% endhighlight %}
+again (without having to jump into the test file).</p>
+<h3>BufferGator</h3>
+<p><a title="BufferGator" href="https://github.com/jeetsukumaran/vim-buffergator">BufferGator</a> allows you to view a list of active buffers, preview their contents and navigate them. To activate press 
+{% highlight vim %}
+<leader> b
+{% endhighlight %}
+</p>
+<h3>Vim Golf</h3>
+<p>One of the hallmarks of vim is how much you can accomplish using only the keyboard, with most activity taking place on the home row, with very few keystrokes. <a title="Vim Golf" href="http://vimgolf.com/">VimGolf</a> is a fantastic tool for improving your vim chops. The gist of it is that you select a challenge, where you are given a file and an end result. Your goal is to edit the file to look like the end result in as few keystrokes as you can. I highly encourage you to check it out.</leader></leader></leader></space></leader></p>

@@ -1,0 +1,19 @@
+---
+layout: post
+title: Default ordering of records in Ember.js
+date: 2013-11-24 21:09:57.000000000 +00:00
+categories:
+- JavaScript
+tags:
+- Emberjs
+status: publish
+type: post
+published: true
+---
+<p>It is easy to change the default ordering of records in <a href="http://emberjs.com/">Ember.js</a>.</p>
+{% highlight javascript %}
+App.PlayersController = Ember.ArrayController.extend({
+  sortProperties: ['player_name'],
+  sortAscending: true // set this to false to sort descending
+});
+{% endhighlight %}

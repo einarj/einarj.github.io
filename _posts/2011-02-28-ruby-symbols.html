@@ -1,0 +1,103 @@
+---
+layout: post
+title: Ruby Symbols
+date: 2011-02-28 23:03:16.000000000 +00:00
+categories:
+- Ruby
+tags: []
+status: draft
+type: post
+published: false
+meta:
+  _edit_last: '1'
+author:
+  login: admin
+  email: einar@codelette.com
+  display_name: einar
+  first_name: ''
+  last_name: ''
+excerpt: !ruby/object:Hpricot::Doc
+  options: {}
+---
+<p><a href="http://www.ruby-doc.org/core/classes/Symbol.html">Symbols</a> are one of the more fuzzy and commonly misunderstood aspects of the <a href="http://www.ruby-lang.org/en/">Ruby programming language</a>. Even Ruby gurus who have a far deeper knowledge of the language than I do, tend to disagree on each others definition. This is my attempt to dispell the magic of Ruby Symbols.</p>
+<p>Symbols are often seen in Rails, in statements such as</p>
+<div>
+[cc lang="ruby" tab_size="2" lines="40"]<br />
+ link_to "Profile", :controller => "profiles", :action => "show", :id => @profile<br />
+[/cc]
+</div>
+<p> (Example taken from http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html)</p>
+<p>The example above has three symbols, namely :controller, :action, and :id, all of which are used as keys in a hash.</p>
+<p>But what are symbols and why don't we just use strings instead?</p>
+<p>Each Ruby process has its own array of symbols, not to be confused with a <a href="http://en.wikipedia.org/wiki/Symbol_table">symbol table</a>, where all symbols that have occurred in that process are stored. The array can be accessed by calling<br />
+ <a href="http://www.ruby-doc.org/core/classes/Symbol.html#M000772">Symbol.all_symbols</a></p>
+<p>Let's play around with the interpreter and see what it can tell us.</p>
+<div>
+[cc lang="ruby" tab_size="2" lines="40"]<br />
+irb(main):001:0> puts Symbol.all_symbols.size<br />
+1780<br />
+=> nil<br />
+irb(main):002:0> colors = [:red, :green, :blue]<br />
+=> [:red, :green, :blue]<br />
+irb(main):003:0> puts Symbol.all_symbols.size<br />
+1784<br />
+=> nil<br />
+irb(main):004:0> rgb_values = {:red => 255, :green => 10, :blue => 40}<br />
+=> {:green=>10, :blue=>40, :red=>255}<br />
+irb(main):005:0> puts Symbol.all_symbols.size<br />
+1785<br />
+=> nil<br />
+[/cc]
+</div>
+<p>There are several entries in the symbol table before we type in our expressions. In my case that initial number is 1780 entries, but your numbers might differ. Some of you might have expected the size of the symbol table to increase by three when we initalized the colors array. The reason why it increases by four is that it's one entry per symbol (:red, :green, :blue) and one entry for colors variable. Similarly, when we use the same symbols as keys in the rgb_values hash, only the rgb_values is added to the symbol table.</p>
+<h1>Some heading here, enter the lab</h1>
+<p>Symbols are often compared to (and confused with) strings, so let's try the same exercise in a fresh instance of irb, but this time we'll substitute the symbols with strings:</p>
+<div>
+[cc lang="ruby" tab_size="2" lines="40"]<br />
+irb(main):001:0> puts Symbol.all_symbols.size<br />
+1780<br />
+=> nil<br />
+irb(main):002:0> colors = ["red", "green", "blue"]<br />
+=> ["red", "green", "blue"]<br />
+irb(main):003:0> puts Symbol.all_symbols.size<br />
+1781<br />
+=> nil<br />
+irb(main):004:0> rgb_values = {"red" => 255, "green" => 10, "blue" => 40}<br />
+=> {"blue"=>40, "green"=>10, "red"=>255}<br />
+irb(main):005:0> puts Symbol.all_symbols.size<br />
+1782<br />
+=> nil<br />
+[/cc]
+</div>
+<p>Note that the strings are not added to the list of symbol tables. The first statement only increases the size of the Symbol.all_symbols array by 1, because of the colors variable. The same time happens next time where only the rgb_values variable is added.</p>
+<h1>Okay, so what are the benefits of symbols?</h1>
+<p>Right. So now we've established that symbols and strings are treated somewhat differently, but we've yet to discuss when we should use symbols rather than strings, and vice versa.</p>
+<p>I find it easiest to think of symbols either as simply names without values, or as immutable objects with both string and integer representations. This has a few positive effects.</p>
+<p>One major difference between the strings and symbols is that:</p>
+<blockquote><p>"In a single program, every occurrence of an identically named symbol is actually the same object." - <a href="http://www.troubleshooters.com/codecorn/ruby/symbols.htm">Steve Litt</a></p></blockquote>
+<p>Which in short means that a symbol uses up less memory than repeated uses of the same string literal. </p>
+<p>Moreover, since symbols have an integer representation, it's faster to compare two symbols than two strings.</p>
+<p>To demonstrate put this code in a script and run it:</p>
+<div>
+[cc lang="ruby" tab_size="2" lines="40"]<br />
+before = Time.now<br />
+100000000.times do<br />
+        "abcd".object_id<br />
+end<br />
+after = Time.now</p>
+<p>puts "Using Strings: #{after - before}"</p>
+<p>before = Time.now<br />
+100000000.times do<br />
+        :red.object_id<br />
+end<br />
+after = Time.now</p>
+<p>puts "Using Symbols: #{after - before}"<br />
+[/cc]
+</p></div>
+<p>When I run this on my machine the output is:</p>
+<div>
+[cc lang="ruby" tab_size="2" lines="40"]<br />
+Using Strings: 61.025486<br />
+Using Symbols: 53.421558<br />
+[/cc]
+</div>

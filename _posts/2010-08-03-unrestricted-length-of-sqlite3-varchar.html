@@ -1,0 +1,14 @@
+---
+layout: post
+title: Unrestricted Length of SQLite3 Varchar
+date: 2010-08-03 10:48:43.000000000 +00:00
+categories: []
+tags: []
+status: publish
+type: post
+published: true
+---
+<p>In one of my pet projects I have a <a href="http://www.sqlite.org">SQLite3</a> database which contains a column defined as <strong>varchar(255)</strong>, and is displayed as such when I execute the <strong>.schema</strong> command inside the sqlite3 console.</p>
+<p>I wrote a unit test for my <a href="http://www.rubyonrails.org">Rails</a> model which inserts a 257 character string into that field, and expected it to trigger an error. I was therefore very surprised when the test failed due to the model both being valid and saving successfully. After poking around a bit I found <a href="http://www.sqlite.org/faq.html">this</a>:</p>
+<blockquote><p>SQLite does not enforce the length of a VARCHAR. You can declare a VARCHAR(10) and SQLite will be happy to let you put 500 characters in it. And it will keep all 500 characters intact - it never truncates.</p></blockquote>
+<p>So if you want to enforce length restrictions on varchar fields in SQLite3, you must enforce them in your model code.</p>

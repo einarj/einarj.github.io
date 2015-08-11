@@ -1,0 +1,17 @@
+---
+layout: post
+title: Empty the contents of a file while it in use
+date: 2012-07-23 11:28:37.000000000 +00:00
+categories:
+- shell
+tags: []
+status: publish
+type: post
+published: true
+---
+<p>I sometimes need to empty the contents of a file without losing active file handles. For instance, to empty log files why my rails development server is running.</p>
+This is a neat bash trick to accomplish that (for log/development.log in this example)
+
+{% highlight bash %}
+cat /dev/null > log/development.log
+{% endhighlight %}

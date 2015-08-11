@@ -1,0 +1,39 @@
+---
+layout: post
+title: 'Asset pipeline gotcha: Trailing newlines'
+date: 2012-10-30 14:42:04.000000000 +00:00
+categories:
+- Rails
+tags: []
+status: publish
+type: post
+published: true
+---
+<p><strong>TL;DR;</strong> If Asset pipeline is configured according to production recommendations (config.assets.debug = false and config.assets.compress = true) then all the stylesheets from your manifest file will be concatenated without adding a newline between them. This may break your styling when you deploy to production.</p>
+<p>I have been putting the finishing touches on the next version of <a href="http://www.brandregard.com">Brand Regard</a> for the last couple of weeks and have reached a stage where I wanted feedback from the non-programmers in the team. So I deployed the app to a staging environment. Imagine my surprise when the staging version did not look anything like what appeared when I ran the app locally.</p>
+<p>After reviewing a lot of diffs, deployment configs etc. I managed to narrow it down to one line in the environments configuration. Namely,:
+
+{% highlight ruby %}
+config.assets.debug = true
+{% endhighlight %}
+
+<p>What this does is that it skips the Sprockets preprocessor and includes each file from the application.css manifest file, rather than combining them into a single file. After playing around with this a bit I finally found the real problem.</p>
+<p>Many of the CSS files included in the manifest, did not end with a blank newline. But when the asset pipeline preprocessor combines them, it compresses all whitespace (and does not include any whitespace).</p>
+<p>To illustrate why this is a problem, consider these two stylesheets:</p>
+{% highlight css %}
+.style1 { stuff; }
+{% endhighlight %}
+and
+{% highlight css %}
+.style2 { otherstuff; }
+{% endhighlight %}
+<p>If these files contain no trailing newlines, the combined stylesheet will (with compression turned on) look like this:
+{% highlight css %}
+.style1{stuff;}.style2{otherstuff;}
+{% endhighlight %}
+<p>But what you probably want is this:
+{% highlight css %}
+.style1{stuff;}
+.style2{otherstuff;}
+{% endhighlight %}
+<p>So, to make sure that your websites looks the same regardless of the config.assets.debug setting, please add a trailing newline to each of your stylesheets.</p>

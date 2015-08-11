@@ -1,0 +1,63 @@
+---
+layout: post
+title: Ruby Mixins
+date: 2013-03-15 13:32:55.000000000 +00:00
+categories:
+- Ruby
+tags:
+- mixins
+status: publish
+type: post
+published: true
+---
+<p>Mixins are the Ruby way to eliminate the need for multiple inheritance. In short, a class can "mixin" multiple modules, which in practice means that it gains either the instance or class methods defined in the mixed in module, depending on <a href="http://blakesmith.me/2009/09/18/ruby-difference-between-extend-and-include.html">how it was mixed in</a>.</p>
+<p>This has some benefits. When a an objects method gets called, it is clear in what order the interpreter will search for that method (<a href="http://blog.rubybestpractices.com/posts/gregory/030-issue-1-method-lookup.html">see a more detailed discussion</a>), thereby avoiding the <a href="http://en.wikipedia.org/wiki/Multiple_inheritance#The_diamond_problem">"Deadly diamond of death"</a> problem.</p>
+Let's look at some code to clarify this.
+
+{% highlight ruby %}
+module A
+  def stuff
+    puts "Hi, I'm module A"
+  end
+end
+
+module B
+  def stuff
+    puts "Hi, I'm module B"
+  end
+  def is_a?(_class)
+    "B#is_a?"
+  end
+end
+
+class First
+ include A
+ include B
+end
+
+class Second
+  include B
+  include A
+end
+
+class Third
+  def stuff
+    puts "Hi, I'm class Third"
+  end
+  include A
+  include B
+end
+
+class ThirdChild < Third
+end
+
+First.new.stuff  # Hi, I'm module B
+Second.new.stuff # Hi, I'm module A
+Third.new.stuff  # Hi, I'm class Third
+puts ThirdChild.new.is_a?(First) # B#is_a?
+{% endhighlight %}
+
+For the First instance we print out "Hi, I'm module B", since module B was mixed in after module A. The reverse is true for the Second instance, module A was mixed in after module B, so we print out "Hi, I'm module A". The Third class has its own method called stuff, and it has precedence over the mixed in methods.</p>
+<p>Finally, the instance of ThirdChild returns the "B#is_a?" string when its <i>is_a?</i> method is called. It is easy to jump to the conclusion that it should call <a href="http://ruby-doc.org/core-1.9.3/Object.html#method-i-is_a-3F">Object#is_a?</a> and return false. However, it's first ancestor, Third, has mixed in module B, and has therefore overridden the Object#is_a? method.</p>
+<p>Mixins are a powerful tool, in particular to <a href="http://en.wikipedia.org/wiki/Don't_repeat_yourself">DRY</a> up code. A common example of its benefits is to mixin the Comparable module and get several comparison methods by implementing a single method (<=>). But mixins should be used with care.</p>
+<p>Whenever you mixin a module, you are <a href="http://blog.steveklabnik.com/posts/2012-05-07-mixins--a-refactoring-anti-pattern">increasing the complexity and surface</a> of that object. Added complexity means that it is more likely to contain bugs. You also need to think hard about whether the mixin violates the <a href="http://en.wikipedia.org/wiki/Single_responsibility_principle">single responsibility principle</a> (and if so, is the violation worth the benefits?).</p>
